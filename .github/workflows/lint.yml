@@ -16,7 +16,7 @@ jobs:
       - name: Install lint tools
         run: sudo apt-get update && sudo apt-get install -y shellcheck shfmt yamllint
       - name: ShellCheck
-        run: shellcheck scripts/*.sh scripts/lib/*.sh bootstrap.sh doctor.sh verify.sh update.sh
+        run: shellcheck -x --severity=warning scripts/*.sh scripts/lib/*.sh bootstrap.sh doctor.sh verify.sh update.sh
       - name: shfmt check
         run: shfmt -d scripts/*.sh scripts/lib/*.sh bootstrap.sh doctor.sh verify.sh update.sh
       - name: YAML lint

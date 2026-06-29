@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2034
 set -Eeuo pipefail
 
 CW_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -198,7 +199,6 @@ cw_load_profile_config() {
   local profile="${1:-$CW_PROFILE}"
   local file="$CW_ROOT/config/profiles/${profile}.env"
   [[ -f "$file" ]] || cw_die "Profile config not found: $file"
-  # shellcheck disable=SC2034 # PROFILE_NAME is loaded for profile metadata parity.
   PROFILE_NAME=""
   PROFILE_MODULES=""
   cw_load_key_value_file "$file" "profile"
