@@ -1,0 +1,8 @@
+{
+  "theme": "matrix",
+  "ui": {
+    "accent": "green",
+    "density": "compact"
+  },
+  "notes": "Example only. Adjust to actual OpenCode schema."
+}

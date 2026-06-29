@@ -1,0 +1,12 @@
+{
+  "filesystem": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-filesystem@2026.1.14",
+      "$HOME/projects",
+      "$HOME/caracoders"
+    ],
+    "policy": "Do not expose all HOME unless explicitly approved."
+  }
+}

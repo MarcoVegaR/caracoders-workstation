@@ -1,0 +1,25 @@
+DC=docker compose
+
+up:
+	$(DC) up -d --build
+
+down:
+	$(DC) down
+
+shell:
+	$(DC) exec app bash
+
+composer-install:
+	$(DC) exec app composer install
+
+npm-install:
+	$(DC) exec app npm install
+
+migrate:
+	$(DC) exec app php artisan migrate
+
+test:
+	$(DC) exec app php artisan test
+
+logs:
+	$(DC) logs -f --tail=100

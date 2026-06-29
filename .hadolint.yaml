@@ -1,0 +1,2 @@
+ignored:
+  - DL3008 # Ubuntu/Debian package pinning is handled at project image level later; this template keeps base dev dependencies readable.

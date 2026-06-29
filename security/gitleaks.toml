@@ -1,0 +1,17 @@
+title = "Caracoders Workstation Gitleaks Config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow obvious non-secret placeholders only"
+regexTarget = "match"
+regexes = [
+  '''admin@example\.test''',
+  '''usuario@caracoders\.com''',
+  '''change-me-local-only''',
+  '''changeme'''
+]
+paths = [
+  '''^security/gitleaks\.toml$'''
+]

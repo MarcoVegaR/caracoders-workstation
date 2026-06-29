@@ -1,0 +1,4 @@
+xdebug.php-debug
+bradlc.vscode-tailwindcss
+vivaxy.vscode-conventional-commits
+streetsidesoftware.code-spell-checker

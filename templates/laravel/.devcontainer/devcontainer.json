@@ -1,0 +1,26 @@
+{
+  "name": "Caracoders Laravel",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/var/www/html",
+  "remoteUser": "app",
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bmewburn.vscode-intelephense-client",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "EditorConfig.EditorConfig",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+  "forwardPorts": [
+    8080,
+    5432,
+    6379,
+    8025
+  ],
+  "postCreateCommand": "if [ -f composer.json ]; then composer install; else echo \"No composer.json yet; skipping composer install.\"; fi"
+}

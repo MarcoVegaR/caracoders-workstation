@@ -1,0 +1,16 @@
+dnsutils
+whois
+traceroute
+net-tools
+iproute2
+iperf3
+httpie
+jq
+remmina
+flameshot
+smartmontools
+gnome-disk-utility
+ncdu
+lsof
+rsync
+filezilla

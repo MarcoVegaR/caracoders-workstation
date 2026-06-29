@@ -1,0 +1,10 @@
+{
+  "context7": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@upstash/context7-mcp@3.2.2"
+    ],
+    "policy": "Documentation lookup; verify code against project version."
+  }
+}

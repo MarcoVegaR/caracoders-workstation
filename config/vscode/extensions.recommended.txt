@@ -1,0 +1,14 @@
+ms-vscode-remote.remote-containers
+ms-azuretools.vscode-docker
+eamodio.gitlens
+GitHub.vscode-pull-request-github
+github.vscode-github-actions
+redhat.vscode-yaml
+mikestead.dotenv
+usernamehw.errorlens
+bmewburn.vscode-intelephense-client
+ryannaddy.laravel-artisan
+dbaeumer.vscode-eslint
+esbenp.prettier-vscode
+ms-playwright.playwright
+EditorConfig.EditorConfig

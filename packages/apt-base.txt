@@ -1,0 +1,14 @@
+curl
+wget
+git
+ca-certificates
+gnupg
+lsb-release
+unzip
+zip
+build-essential
+software-properties-common
+bash-completion
+jq
+tree
+htop

@@ -1,0 +1,29 @@
+name: lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  shell-yaml-compose:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - name: Install lint tools
+        run: sudo apt-get update && sudo apt-get install -y shellcheck shfmt yamllint
+      - name: ShellCheck
+        run: shellcheck scripts/*.sh scripts/lib/*.sh bootstrap.sh doctor.sh verify.sh update.sh
+      - name: shfmt check
+        run: shfmt -d scripts/*.sh scripts/lib/*.sh bootstrap.sh doctor.sh verify.sh update.sh
+      - name: YAML lint
+        run: yamllint .github/workflows config templates .yamllint.yml
+      - name: Docker Compose config - Laravel template
+        run: docker compose -f templates/laravel/docker-compose.yml --env-file templates/laravel/.env.example config
+      - name: Docker Compose config - pgAdmin template
+        run: docker compose -f templates/pgadmin/docker-compose.yml --env-file templates/pgadmin/.env.example config
+      - name: Repository verify
+        run: ./verify.sh --profile minimal

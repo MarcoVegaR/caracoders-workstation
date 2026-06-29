@@ -1,0 +1,1 @@
+# Docker Engine is installed from Docker's official apt repository by scripts/install-docker.sh.

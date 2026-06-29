@@ -1,0 +1,84 @@
+name: install-test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run-profiles:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-26.04]
+        profile: [minimal, dev, laravel, docker, devcontainer, vscode, ai, support, security, full]
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - name: Dry-run profile
+        run: ./bootstrap.sh --profile "${{ matrix.profile }}" --dry-run --yes
+
+  minimal-install:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-26.04]
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - name: Minimal non-interactive install
+        run: ./bootstrap.sh --profile minimal --yes
+      - name: Strict doctor minimal
+        run: ./doctor.sh --profile minimal --strict
+
+  dev-install:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-26.04]
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - name: Dev non-interactive install
+        run: ./bootstrap.sh --profile dev --yes
+      - name: Strict doctor dev
+        run: ./doctor.sh --profile dev --strict
+
+  critical-profile-smoke:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-26.04]
+        profile: [laravel, ai, security]
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - name: Critical profile smoke install
+        run: ./bootstrap.sh --profile "${{ matrix.profile }}" --yes
+      - name: Strict doctor critical profile
+        run: ./doctor.sh --profile "${{ matrix.profile }}" --strict
+
+  apt-package-candidates:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-26.04]
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - name: Validate apt package candidates
+        run: |
+          sudo apt-get update
+          grep -hEv '^\s*($|#)' packages/apt-base.txt packages/apt-dev.txt packages/apt-laravel.txt packages/apt-support.txt packages/apt-security.txt \
+            | sort -u \
+            | while read -r pkg; do apt-cache show "$pkg" >/dev/null; done
+
+  no-input-yes-mode:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - name: Full dry-run yes mode must not prompt
+        run: timeout 60 ./bootstrap.sh --profile full --dry-run --yes

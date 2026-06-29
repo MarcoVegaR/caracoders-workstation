@@ -1,0 +1,10 @@
+{
+  "playwright": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@playwright/mcp@0.0.76"
+    ],
+    "policy": "Local development and test environments only."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "postgres": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-postgres@0.6.2",
+      "postgresql://app:app@localhost:5432/app"
+    ],
+    "policy": "Development credentials only; no production."
+  }
+}

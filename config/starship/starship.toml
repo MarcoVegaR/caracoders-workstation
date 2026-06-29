@@ -1,0 +1,25 @@
+add_newline = true
+command_timeout = 1000
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+
+[directory]
+truncate_to_repo = false
+truncation_length = 4
+
+[git_branch]
+symbol = "git:"
+
+[git_status]
+disabled = false
+
+[nodejs]
+detect_files = ["package.json", ".node-version", "pnpm-lock.yaml"]
+
+[php]
+detect_files = ["composer.json"]
+
+[docker_context]
+disabled = false

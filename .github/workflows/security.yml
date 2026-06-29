@@ -1,0 +1,25 @@
+name: security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  security-tools:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Install checksum-verified security tools
+        run: ./scripts/install-security-tools.sh --profile security --yes
+      - name: Validate gitleaks TOML
+        run: python3 -c "import tomllib; tomllib.load(open('security/gitleaks.toml','rb'))"
+      - name: Gitleaks
+        run: gitleaks detect --config security/gitleaks.toml --source . --no-git --verbose
+      - name: Trivy filesystem scan
+        run: trivy fs --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 .
+      - name: Hadolint
+        run: hadolint --config .hadolint.yaml templates/laravel/Dockerfile
