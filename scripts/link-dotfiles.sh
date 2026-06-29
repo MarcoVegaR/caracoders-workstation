@@ -24,7 +24,7 @@ else
     [[ -f "$bashrc" ]] || cw_run touch "$bashrc"
     cw_backup_file "$bashrc"
     if [[ "$CW_DRY_RUN" == "false" ]]; then
-      printf '\n%s\n' "$block" >> "$bashrc"
+      printf '\n%s\n' "$block" >>"$bashrc"
       cw_record_action "APPEND caracoders block to $bashrc"
     else
       cw_log "DRY-RUN: append marked block to $bashrc"

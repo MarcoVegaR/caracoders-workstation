@@ -42,7 +42,7 @@ cw_log "Checking safe config parser allowlist"
 for blocked_key in PATH IFS BASH_ENV SHELLOPTS CW_ROOT CW_DRY_RUN PROFILE_MODULES; do
   tmp="$(mktemp)"
   printf '%s="bad"
-' "$blocked_key" > "$tmp"
+' "$blocked_key" >"$tmp"
   if bash -c 'source scripts/lib/common.sh; cw_load_key_value_file "$1" local-config' _ "$tmp" >/tmp/caracoders-parser-test.out 2>/tmp/caracoders-parser-test.err; then
     cat /tmp/caracoders-parser-test.out /tmp/caracoders-parser-test.err >&2 || true
     rm -f "$tmp"
@@ -53,7 +53,7 @@ done
 
 tmp="$(mktemp)"
 printf 'CARACODERS_USER_NAME="Marco # Caracoders" # allowed comment
-' > "$tmp"
+' >"$tmp"
 if ! bash -c 'source scripts/lib/common.sh; cw_load_key_value_file "$1" local-config; [[ "$CARACODERS_USER_NAME" == "Marco # Caracoders" ]]' _ "$tmp" >/tmp/caracoders-parser-hash.out 2>/tmp/caracoders-parser-hash.err; then
   cat /tmp/caracoders-parser-hash.out /tmp/caracoders-parser-hash.err >&2 || true
   rm -f "$tmp"
@@ -207,7 +207,7 @@ if grep -R --line-number -E 'latest-stable|latest-supported|NODE_VERSION="lts"|:
   cw_die "Moving version alias or latest tag found in active assets."
 fi
 
-[[ "$(tr -d '[:space:]' < "$CW_ROOT/packages/node-version")" == "${NODE_VERSION:-}" ]] || cw_die "packages/node-version must match NODE_VERSION in config/versions.env."
+[[ "$(tr -d '[:space:]' <"$CW_ROOT/packages/node-version")" == "${NODE_VERSION:-}" ]] || cw_die "packages/node-version must match NODE_VERSION in config/versions.env."
 
 DOCKER_HELLO_WORLD_IMAGE_CHECK="${DOCKER_HELLO_WORLD_IMAGE:-}"
 [[ -n "$DOCKER_HELLO_WORLD_IMAGE_CHECK" ]] || cw_die "DOCKER_HELLO_WORLD_IMAGE must be set in config/versions.env"

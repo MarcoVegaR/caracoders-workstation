@@ -14,7 +14,10 @@ USAGE
   cw_usage_common
 }
 
-[[ "${1:-}" == "--help" || "${1:-}" == "-h" ]] && { usage; exit 0; }
+[[ "${1:-}" == "--help" || "${1:-}" == "-h" ]] && {
+  usage
+  exit 0
+}
 cw_parse_args "$@"
 cw_load_config
 cw_check_profile
@@ -33,30 +36,30 @@ run_script() {
 run_module() {
   local module="$1"
   case "$module" in
-    minimal) : ;;
-    dev)
-      run_script install-node-nvm.sh --profile "$CW_PROFILE"
-      run_script link-dotfiles.sh --profile "$CW_PROFILE"
-      ;;
-    laravel)
-      run_script install-node-nvm.sh --profile "$CW_PROFILE"
-      run_script install-php-composer.sh --profile "$CW_PROFILE"
-      run_script install-laravel.sh --profile "$CW_PROFILE"
-      run_script link-dotfiles.sh --profile "$CW_PROFILE"
-      ;;
-    docker) run_script install-docker.sh --profile "$CW_PROFILE" ;;
-    devcontainer) cw_log "Dev Container templates are repository assets; no host install needed beyond Docker + VS Code extension." ;;
-    vscode) run_script install-vscode.sh --profile "$CW_PROFILE" ;;
-    ai)
-      run_script install-node-nvm.sh --profile "$CW_PROFILE"
-      run_script install-opencode.sh --profile "$CW_PROFILE"
-      run_script install-mcp.sh --profile "$CW_PROFILE"
-      ;;
-    support) run_script install-support-tools.sh --profile "$CW_PROFILE" ;;
-    security) run_script install-security-tools.sh --profile "$CW_PROFILE" ;;
-    starship) run_script install-starship.sh --profile "$CW_PROFILE" ;;
-    dotfiles) run_script link-dotfiles.sh --profile "$CW_PROFILE" ;;
-    *) cw_die "Unknown profile module: $module" ;;
+  minimal) : ;;
+  dev)
+    run_script install-node-nvm.sh --profile "$CW_PROFILE"
+    run_script link-dotfiles.sh --profile "$CW_PROFILE"
+    ;;
+  laravel)
+    run_script install-node-nvm.sh --profile "$CW_PROFILE"
+    run_script install-php-composer.sh --profile "$CW_PROFILE"
+    run_script install-laravel.sh --profile "$CW_PROFILE"
+    run_script link-dotfiles.sh --profile "$CW_PROFILE"
+    ;;
+  docker) run_script install-docker.sh --profile "$CW_PROFILE" ;;
+  devcontainer) cw_log "Dev Container templates are repository assets; no host install needed beyond Docker + VS Code extension." ;;
+  vscode) run_script install-vscode.sh --profile "$CW_PROFILE" ;;
+  ai)
+    run_script install-node-nvm.sh --profile "$CW_PROFILE"
+    run_script install-opencode.sh --profile "$CW_PROFILE"
+    run_script install-mcp.sh --profile "$CW_PROFILE"
+    ;;
+  support) run_script install-support-tools.sh --profile "$CW_PROFILE" ;;
+  security) run_script install-security-tools.sh --profile "$CW_PROFILE" ;;
+  starship) run_script install-starship.sh --profile "$CW_PROFILE" ;;
+  dotfiles) run_script link-dotfiles.sh --profile "$CW_PROFILE" ;;
+  *) cw_die "Unknown profile module: $module" ;;
   esac
 }
 

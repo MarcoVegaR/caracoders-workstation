@@ -7,8 +7,14 @@ cw_load_config
 bashrc="$HOME/.bashrc"
 block_start="# >>> caracoders-workstation >>>"
 block_end="# <<< caracoders-workstation <<<"
-[[ -f "$bashrc" ]] || { cw_log "No .bashrc found. Nothing to rollback."; exit 0; }
-grep -Fq "$block_start" "$bashrc" || { cw_log "No Caracoders block found in .bashrc. Nothing to rollback."; exit 0; }
+[[ -f "$bashrc" ]] || {
+  cw_log "No .bashrc found. Nothing to rollback."
+  exit 0
+}
+grep -Fq "$block_start" "$bashrc" || {
+  cw_log "No Caracoders block found in .bashrc. Nothing to rollback."
+  exit 0
+}
 
 if cw_confirm_sensitive CARACODERS_CONFIRM_ROLLBACK_DOTFILES "Remove Caracoders marked block from .bashrc?"; then
   cw_backup_file "$bashrc"

@@ -19,7 +19,10 @@ else
   if [[ "$CW_DRY_RUN" == "false" ]]; then
     expected="$(wget -q -O - https://composer.github.io/installer.sig)"
     actual="$(php -r "echo hash_file('sha384', '$installer');")"
-    [[ "$expected" == "$actual" ]] || { rm -f "$installer"; cw_die "Invalid Composer installer signature."; }
+    [[ "$expected" == "$actual" ]] || {
+      rm -f "$installer"
+      cw_die "Invalid Composer installer signature."
+    }
   else
     cw_log "DRY-RUN: verify Composer installer signature"
   fi

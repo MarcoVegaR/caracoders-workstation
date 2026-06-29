@@ -17,7 +17,10 @@ CW_MANIFEST="$CW_STATE_DIR/install-manifest.log"
 cw_log() { printf '[caracoders] %s\n' "$*"; }
 cw_warn() { printf '[caracoders][WARN] %s\n' "$*" >&2; }
 cw_err() { printf '[caracoders][ERROR] %s\n' "$*" >&2; }
-cw_die() { cw_err "$*"; exit 1; }
+cw_die() {
+  cw_err "$*"
+  exit 1
+}
 
 cw_usage_common() {
   cat <<'USAGE'
@@ -34,23 +37,41 @@ USAGE
 cw_parse_args() {
   while (($#)); do
     case "$1" in
-      --profile)
-        [[ $# -ge 2 ]] || cw_die "--profile requires a value"
-        CW_PROFILE="$2"
-        shift 2
-        ;;
-      --profile=*) CW_PROFILE="${1#*=}"; shift ;;
-      --dry-run) CW_DRY_RUN="true"; shift ;;
-      --yes | -y) CW_YES="true"; shift ;;
-      --strict) CW_STRICT="true"; shift ;;
-      --config)
-        [[ $# -ge 2 ]] || cw_die "--config requires a file"
-        CW_CONFIG="$2"
-        shift 2
-        ;;
-      --config=*) CW_CONFIG="${1#*=}"; shift ;;
-      --help | -h) cw_usage_common; exit 0 ;;
-      *) cw_die "Unknown argument: $1" ;;
+    --profile)
+      [[ $# -ge 2 ]] || cw_die "--profile requires a value"
+      CW_PROFILE="$2"
+      shift 2
+      ;;
+    --profile=*)
+      CW_PROFILE="${1#*=}"
+      shift
+      ;;
+    --dry-run)
+      CW_DRY_RUN="true"
+      shift
+      ;;
+    --yes | -y)
+      CW_YES="true"
+      shift
+      ;;
+    --strict)
+      CW_STRICT="true"
+      shift
+      ;;
+    --config)
+      [[ $# -ge 2 ]] || cw_die "--config requires a file"
+      CW_CONFIG="$2"
+      shift 2
+      ;;
+    --config=*)
+      CW_CONFIG="${1#*=}"
+      shift
+      ;;
+    --help | -h)
+      cw_usage_common
+      exit 0
+      ;;
+    *) cw_die "Unknown argument: $1" ;;
     esac
   done
 }
@@ -61,7 +82,6 @@ cw_trim() {
   value="${value%"${value##*[![:space:]]}"}"
   printf '%s' "$value"
 }
-
 
 cw_strip_inline_comment() {
   local line="$1" out="" ch in_single="false" in_double="false" i
@@ -88,8 +108,8 @@ cw_strip_inline_comment() {
 cw_key_is_dangerous() {
   local key="$1"
   case "$key" in
-    PATH | IFS | BASH_ENV | ENV | SHELLOPTS | BASHOPTS | CDPATH | GLOBIGNORE | PROMPT_COMMAND | PS4 | HOME | USER | UID | EUID | PWD | OLDPWD | RANDOM | LINENO | SECONDS | HISTFILE | HISTCONTROL | HISTIGNORE | LD_* | DYLD_* | SUDO_* | CW_*) return 0 ;;
-    *) return 1 ;;
+  PATH | IFS | BASH_ENV | ENV | SHELLOPTS | BASHOPTS | CDPATH | GLOBIGNORE | PROMPT_COMMAND | PS4 | HOME | USER | UID | EUID | PWD | OLDPWD | RANDOM | LINENO | SECONDS | HISTFILE | HISTCONTROL | HISTIGNORE | LD_* | DYLD_* | SUDO_* | CW_*) return 0 ;;
+  *) return 1 ;;
   esac
 }
 
@@ -101,42 +121,42 @@ cw_config_key_allowed() {
   fi
 
   case "$label" in
-    versions)
-      case "$key" in
-        UBUNTU_PRIMARY | UBUNTU_SECONDARY | NODE_VERSION | NVM_VERSION | PHP_VERSION_POLICY | COMPOSER_VERSION | LARAVEL_INSTALLER_CONSTRAINT | DOCKER_CHANNEL | DOCKER_APT_KEY_URL | DOCKER_APT_KEY_FINGERPRINT | OPENCODE_NPM_PACKAGE | MCP_FILESYSTEM_PACKAGE | MCP_PLAYWRIGHT_PACKAGE | MCP_CONTEXT7_PACKAGE | MCP_POSTGRES_PACKAGE | PNPM_PACKAGE | NERD_FONT_NAME | NERD_FONT_VERSION | DOCKER_HELLO_WORLD_IMAGE | GITLEAKS_VERSION | TRIVY_VERSION | HADOLINT_VERSION | STARSHIP_VERSION | STARSHIP_X86_64_GNU_SHA256 | PECL_REDIS_VERSION | GITLEAKS_CHECKSUMS_URL | TRIVY_CHECKSUMS_URL | HADOLINT_X86_64_SHA256_URL | HADOLINT_ARM64_SHA256_URL | NERD_FONT_SHA256 | NERD_FONT_CHECKSUMS_URL) return 0 ;;
-        *) return 1 ;;
-      esac
-      ;;
-    profile)
-      case "$key" in
-        PROFILE_NAME | PROFILE_MODULES) return 0 ;;
-        *) return 1 ;;
-      esac
-      ;;
-    os-release)
-      # /etc/os-release is trusted system metadata and varies by distro/version.
-      # Dangerous shell/environment keys are still blocked by cw_key_is_dangerous above.
-      return 0
-      ;;
-    local-config)
-      case "$key" in
-        CARACODERS_USER_NAME | CARACODERS_USER_EMAIL | GIT_AUTHOR_NAME | GIT_AUTHOR_EMAIL | GITHUB_USERNAME | OPENCODE_PROVIDER | OPENCODE_API_KEY | MCP_FILESYSTEM_ALLOW_HOME | MCP_FILESYSTEM_ALLOWED_PATHS | INSTALL_VSCODE_EXTENSIONS | INSTALL_STARSHIP_FONT | CARACODERS_CONFIRM_* | CARACODERS_ALLOW_*) return 0 ;;
-        PROFILE_* | CW_*) return 1 ;;
-        *) return 1 ;;
-      esac
-      ;;
-    *)
-      return 1
-      ;;
+  versions)
+    case "$key" in
+    UBUNTU_PRIMARY | UBUNTU_SECONDARY | NODE_VERSION | NVM_VERSION | PHP_VERSION_POLICY | COMPOSER_VERSION | LARAVEL_INSTALLER_CONSTRAINT | DOCKER_CHANNEL | DOCKER_APT_KEY_URL | DOCKER_APT_KEY_FINGERPRINT | OPENCODE_NPM_PACKAGE | MCP_FILESYSTEM_PACKAGE | MCP_PLAYWRIGHT_PACKAGE | MCP_CONTEXT7_PACKAGE | MCP_POSTGRES_PACKAGE | PNPM_PACKAGE | NERD_FONT_NAME | NERD_FONT_VERSION | DOCKER_HELLO_WORLD_IMAGE | GITLEAKS_VERSION | TRIVY_VERSION | HADOLINT_VERSION | STARSHIP_VERSION | STARSHIP_X86_64_GNU_SHA256 | PECL_REDIS_VERSION | GITLEAKS_CHECKSUMS_URL | TRIVY_CHECKSUMS_URL | HADOLINT_X86_64_SHA256_URL | HADOLINT_ARM64_SHA256_URL | NERD_FONT_SHA256 | NERD_FONT_CHECKSUMS_URL) return 0 ;;
+    *) return 1 ;;
+    esac
+    ;;
+  profile)
+    case "$key" in
+    PROFILE_NAME | PROFILE_MODULES) return 0 ;;
+    *) return 1 ;;
+    esac
+    ;;
+  os-release)
+    # /etc/os-release is trusted system metadata and varies by distro/version.
+    # Dangerous shell/environment keys are still blocked by cw_key_is_dangerous above.
+    return 0
+    ;;
+  local-config)
+    case "$key" in
+    CARACODERS_USER_NAME | CARACODERS_USER_EMAIL | GIT_AUTHOR_NAME | GIT_AUTHOR_EMAIL | GITHUB_USERNAME | OPENCODE_PROVIDER | OPENCODE_API_KEY | MCP_FILESYSTEM_ALLOW_HOME | MCP_FILESYSTEM_ALLOWED_PATHS | INSTALL_VSCODE_EXTENSIONS | INSTALL_STARSHIP_FONT | CARACODERS_CONFIRM_* | CARACODERS_ALLOW_*) return 0 ;;
+    PROFILE_* | CW_*) return 1 ;;
+    *) return 1 ;;
+    esac
+    ;;
+  *)
+    return 1
+    ;;
   esac
 }
 
 cw_normalize_config_label() {
   local label="$1"
   case "$label" in
-    versions | profile | os-release) printf '%s' "$label" ;;
-    local\ config | local-config) printf 'local-config' ;;
-    *) printf '%s' "$label" ;;
+  versions | profile | os-release) printf '%s' "$label" ;;
+  local\ config | local-config) printf 'local-config' ;;
+  *) printf '%s' "$label" ;;
   esac
 }
 
@@ -174,7 +194,7 @@ cw_load_key_value_file() {
     value="${value//\$HOME/$HOME}"
     [[ "$value" == ~/* ]] && value="$HOME/${value#~/}"
     declare -gx "$key=$value"
-  done < "$file"
+  done <"$file"
 }
 
 cw_load_config() {
@@ -182,7 +202,7 @@ cw_load_config() {
   if [[ -n "$CW_CONFIG" ]]; then
     [[ -f "$CW_CONFIG" ]] || cw_die "Config file not found: $CW_CONFIG"
     case "$CW_CONFIG" in
-      *.example) cw_die "Do not use example config as real config: $CW_CONFIG" ;;
+    *.example) cw_die "Do not use example config as real config: $CW_CONFIG" ;;
     esac
     cw_load_key_value_file "$CW_CONFIG" "local-config"
   fi
@@ -190,8 +210,8 @@ cw_load_config() {
 
 cw_check_profile() {
   case "$CW_PROFILE" in
-    minimal | dev | laravel | docker | devcontainer | vscode | ai | support | security | full) ;;
-    *) cw_die "Unsupported profile: $CW_PROFILE" ;;
+  minimal | dev | laravel | docker | devcontainer | vscode | ai | support | security | full) ;;
+  *) cw_die "Unsupported profile: $CW_PROFILE" ;;
   esac
 }
 
@@ -257,7 +277,7 @@ cw_record_action() {
   local message="$1"
   [[ "$CW_DRY_RUN" == "true" ]] && return 0
   mkdir -p "$CW_STATE_DIR"
-  printf '%s %s\n' "$(date -Is)" "$message" >> "$CW_MANIFEST"
+  printf '%s %s\n' "$(date -Is)" "$message" >>"$CW_MANIFEST"
 }
 
 cw_run() {
@@ -355,7 +375,10 @@ cw_install_apt_file() {
   local file="$1"
   [[ -f "$file" ]] || cw_die "APT package file not found: $file"
   mapfile -t packages < <(cw_read_package_file "$file")
-  ((${#packages[@]} > 0)) || { cw_log "No apt packages in $file"; return 0; }
+  ((${#packages[@]} > 0)) || {
+    cw_log "No apt packages in $file"
+    return 0
+  }
   cw_run sudo apt-get update
   cw_run sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y "${packages[@]}"
 }
@@ -389,12 +412,11 @@ cw_verify_sha256() {
 
 cw_arch_token() {
   case "$(uname -m)" in
-    x86_64 | amd64) printf 'x86_64' ;;
-    aarch64 | arm64) printf 'aarch64' ;;
-    *) cw_die "Unsupported architecture: $(uname -m)" ;;
+  x86_64 | amd64) printf 'x86_64' ;;
+  aarch64 | arm64) printf 'aarch64' ;;
+  *) cw_die "Unsupported architecture: $(uname -m)" ;;
   esac
 }
-
 
 cw_sha256_from_manifest() {
   local manifest="$1" asset="$2" checksum
@@ -448,7 +470,6 @@ cw_copy_with_backup() {
   fi
   cw_run install -m 0644 "$src" "$dst"
 }
-
 
 cw_copy_tree_with_backup() {
   local src_dir="$1" dst_dir="$2" rel src dst

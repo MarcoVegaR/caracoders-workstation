@@ -22,15 +22,15 @@ check_cmd() {
 
 required_commands_for_module() {
   case "$1" in
-    minimal) printf '%s\n' git curl jq tree htop ;;
-    dev) printf '%s\n' gh rg fdfind fzf batcat eza btop ncdu make shellcheck shfmt pre-commit http python3 pipx yq ;;
-    laravel) printf '%s\n' php composer laravel node npm pnpm psql redis-cli ;;
-    docker) printf '%s\n' docker ;;
-    vscode) printf '%s\n' code ;;
-    ai) printf '%s\n' git python3 node npm npx opencode ;;
-    support) printf '%s\n' dig whois traceroute ip iperf3 http jq remmina flameshot smartctl gnome-disks ncdu lsof rsync filezilla ;;
-    security) printf '%s\n' gitleaks trivy hadolint shellcheck shfmt pre-commit ;;
-    devcontainer | starship | dotfiles) : ;;
+  minimal) printf '%s\n' git curl jq tree htop ;;
+  dev) printf '%s\n' gh rg fdfind fzf batcat eza btop ncdu make shellcheck shfmt pre-commit http python3 pipx yq ;;
+  laravel) printf '%s\n' php composer laravel node npm pnpm psql redis-cli ;;
+  docker) printf '%s\n' docker ;;
+  vscode) printf '%s\n' code ;;
+  ai) printf '%s\n' git python3 node npm npx opencode ;;
+  support) printf '%s\n' dig whois traceroute ip iperf3 http jq remmina flameshot smartctl gnome-disks ncdu lsof rsync filezilla ;;
+  security) printf '%s\n' gitleaks trivy hadolint shellcheck shfmt pre-commit ;;
+  devcontainer | starship | dotfiles) : ;;
   esac
 }
 

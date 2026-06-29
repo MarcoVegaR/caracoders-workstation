@@ -18,7 +18,7 @@ validate_mcp_filesystem_paths() {
     allowed_paths="$HOME/projects,$HOME/caracoders"
   fi
 
-  IFS=',' read -r -a raw_paths <<< "$allowed_paths"
+  IFS=',' read -r -a raw_paths <<<"$allowed_paths"
   home_canon="$(cw_canonicalize_path "$HOME")"
   root_canon="/"
 
@@ -110,7 +110,7 @@ if [[ "$CW_DRY_RUN" == "false" ]]; then
   for path in "${validated_paths[@]}"; do
     args_json+=", $(python3 -c 'import json,sys; print(json.dumps(sys.argv[1]))' "$path")"
   done
-  cat > "$HOME/.config/opencode/mcp/examples/filesystem.local.example.json" <<EOF_MCP
+  cat >"$HOME/.config/opencode/mcp/examples/filesystem.local.example.json" <<EOF_MCP
 {
   "filesystem": {
     "command": "npx",

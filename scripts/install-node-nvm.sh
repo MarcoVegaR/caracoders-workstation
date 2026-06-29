@@ -24,7 +24,7 @@ if [[ "$CW_DRY_RUN" == "false" ]]; then
     [[ -z "$pkg" || "$pkg" =~ ^# ]] && continue
     [[ "$pkg" == pnpm@* ]] || continue
     cw_run npm install -g "$pkg"
-  done < "$CW_ROOT/packages/npm-global.txt"
+  done <"$CW_ROOT/packages/npm-global.txt"
 else
   cw_log "DRY-RUN: source nvm and install Node ${NODE_VERSION:-24.17.0} plus pinned pnpm from packages/npm-global.txt"
 fi

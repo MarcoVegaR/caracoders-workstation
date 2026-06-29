@@ -13,7 +13,7 @@ if ! cw_command_exists code; then
     cw_run mkdir -p /tmp/caracoders-workstation
     cw_run wget -qO /tmp/caracoders-workstation/microsoft.asc https://packages.microsoft.com/keys/microsoft.asc
     if [[ "$CW_DRY_RUN" == "false" ]]; then
-      gpg --dearmor < /tmp/caracoders-workstation/microsoft.asc > /tmp/caracoders-workstation/packages.microsoft.gpg
+      gpg --dearmor </tmp/caracoders-workstation/microsoft.asc >/tmp/caracoders-workstation/packages.microsoft.gpg
       cw_record_action "CREATE /tmp/caracoders-workstation/packages.microsoft.gpg"
     else
       cw_log "DRY-RUN: dearmor Microsoft signing key"
@@ -45,7 +45,7 @@ if cw_command_exists code; then
     while IFS= read -r ext; do
       [[ -z "$ext" || "$ext" =~ ^# ]] && continue
       cw_run code --install-extension "$ext" --force
-    done < "$CW_ROOT/config/vscode/extensions.recommended.txt"
+    done <"$CW_ROOT/config/vscode/extensions.recommended.txt"
   fi
   if cw_confirm_sensitive CARACODERS_CONFIRM_COPY_VSCODE_CONFIG "Copy global VS Code settings.json to user profile?"; then
     cw_copy_with_backup "$CW_ROOT/config/vscode/settings.json" "$HOME/.config/Code/User/settings.json"

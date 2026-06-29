@@ -13,9 +13,9 @@ install_gitleaks() {
   fi
   local version="${GITLEAKS_VERSION:-8.29.0}" arch asset url checksum_url tmpdir archive checksums
   case "$(uname -m)" in
-    x86_64 | amd64) arch="x64" ;;
-    aarch64 | arm64) arch="arm64" ;;
-    *) cw_die "Unsupported architecture for gitleaks: $(uname -m)" ;;
+  x86_64 | amd64) arch="x64" ;;
+  aarch64 | arm64) arch="arm64" ;;
+  *) cw_die "Unsupported architecture for gitleaks: $(uname -m)" ;;
   esac
   asset="gitleaks_${version}_linux_${arch}.tar.gz"
   url="https://github.com/gitleaks/gitleaks/releases/download/v${version}/${asset}"
@@ -38,9 +38,9 @@ install_trivy() {
   fi
   local version="${TRIVY_VERSION:-0.71.2}" arch asset url checksum_url tmpdir archive checksums
   case "$(uname -m)" in
-    x86_64 | amd64) arch="64bit" ;;
-    aarch64 | arm64) arch="ARM64" ;;
-    *) cw_die "Unsupported architecture for trivy: $(uname -m)" ;;
+  x86_64 | amd64) arch="64bit" ;;
+  aarch64 | arm64) arch="ARM64" ;;
+  *) cw_die "Unsupported architecture for trivy: $(uname -m)" ;;
   esac
   asset="trivy_${version}_Linux-${arch}.tar.gz"
   url="https://github.com/aquasecurity/trivy/releases/download/v${version}/${asset}"
@@ -63,15 +63,15 @@ install_hadolint() {
   fi
   local version="${HADOLINT_VERSION:-2.14.0}" arch asset url checksum_url tmpdir bin sha_file expected
   case "$(uname -m)" in
-    x86_64 | amd64)
-      arch="x86_64"
-      checksum_url="${HADOLINT_X86_64_SHA256_URL:-https://github.com/hadolint/hadolint/releases/download/v${version}/hadolint-linux-x86_64.sha256}"
-      ;;
-    aarch64 | arm64)
-      arch="arm64"
-      checksum_url="${HADOLINT_ARM64_SHA256_URL:-https://github.com/hadolint/hadolint/releases/download/v${version}/hadolint-linux-arm64.sha256}"
-      ;;
-    *) cw_die "Unsupported architecture for hadolint: $(uname -m)" ;;
+  x86_64 | amd64)
+    arch="x86_64"
+    checksum_url="${HADOLINT_X86_64_SHA256_URL:-https://github.com/hadolint/hadolint/releases/download/v${version}/hadolint-linux-x86_64.sha256}"
+    ;;
+  aarch64 | arm64)
+    arch="arm64"
+    checksum_url="${HADOLINT_ARM64_SHA256_URL:-https://github.com/hadolint/hadolint/releases/download/v${version}/hadolint-linux-arm64.sha256}"
+    ;;
+  *) cw_die "Unsupported architecture for hadolint: $(uname -m)" ;;
   esac
   asset="hadolint-linux-${arch}"
   url="https://github.com/hadolint/hadolint/releases/download/v${version}/${asset}"
