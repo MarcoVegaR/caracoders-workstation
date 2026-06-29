@@ -172,8 +172,7 @@ cw_load_key_value_file() {
     value="${value//\$\{HOME\}/$HOME}"
     value="${value//\$HOME/$HOME}"
     [[ "$value" == ~/* ]] && value="$HOME/${value#~/}"
-    printf -v "$key" '%s' "$value"
-    export "$key"
+    declare -gx "$key=$value"
   done < "$file"
 }
 
@@ -196,8 +195,10 @@ cw_check_profile() {
 }
 
 cw_load_profile_config() {
-  local profile="${1:-$CW_PROFILE}" file="$CW_ROOT/config/profiles/${profile}.env"
+  local profile="${1:-$CW_PROFILE}"
+  local file="$CW_ROOT/config/profiles/${profile}.env"
   [[ -f "$file" ]] || cw_die "Profile config not found: $file"
+  # shellcheck disable=SC2034 # PROFILE_NAME is loaded for profile metadata parity.
   PROFILE_NAME=""
   PROFILE_MODULES=""
   cw_load_key_value_file "$file" "profile"
@@ -361,6 +362,10 @@ cw_install_apt_file() {
 
 cw_install_binary_file() {
   local src="$1" dst="$2" mode="${3:-0755}"
+  if [[ "$CW_DRY_RUN" == "true" ]]; then
+    cw_run sudo install -m "$mode" "$src" "$dst"
+    return 0
+  fi
   [[ -f "$src" ]] || cw_die "Binary source not found: $src"
   cw_run sudo install -m "$mode" "$src" "$dst"
 }
@@ -401,6 +406,10 @@ cw_sha256_from_manifest() {
 
 cw_verify_sha256_from_manifest() {
   local file="$1" manifest="$2" asset="$3" expected
+  if [[ "$CW_DRY_RUN" == "true" ]]; then
+    cw_log "DRY-RUN: verify sha256 for $file using manifest $manifest asset $asset"
+    return 0
+  fi
   expected="$(cw_sha256_from_manifest "$manifest" "$asset")"
   cw_verify_sha256 "$file" "$expected"
 }

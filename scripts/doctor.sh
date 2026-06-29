@@ -5,6 +5,7 @@ cw_parse_args "$@"
 cw_load_config
 cw_check_profile
 cw_load_nvm_if_available
+export PATH="$HOME/.config/composer/vendor/bin:$HOME/.composer/vendor/bin:$PATH"
 
 missing_count=0
 warn_count=0

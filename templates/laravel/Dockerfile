@@ -34,7 +34,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -g "${GID}" app \
-    && useradd -u "${UID}" -g app -m -s /bin/bash app
+    && useradd -l -u "${UID}" -g app -m -s /bin/bash app
 
 WORKDIR /var/www/html
 USER app
