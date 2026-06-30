@@ -66,9 +66,10 @@ run_module() {
 cw_log "Starting bootstrap. profile=$CW_PROFILE dry-run=$CW_DRY_RUN yes=$CW_YES"
 run_script preflight.sh --profile "$CW_PROFILE"
 run_script install-apt.sh --profile "$CW_PROFILE"
-while IFS= read -r module; do
+mapfile -t modules < <(cw_profile_modules "$CW_PROFILE")
+for module in "${modules[@]}"; do
   run_module "$module"
-done < <(cw_profile_modules "$CW_PROFILE")
+done
 run_script doctor.sh --profile "$CW_PROFILE"
 run_script verify.sh --profile "$CW_PROFILE"
 cw_log "Bootstrap finished. Review warnings above. Docker group changes may require logout/login."

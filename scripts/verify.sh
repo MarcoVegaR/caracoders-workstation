@@ -38,6 +38,20 @@ if grep -R --line-number -E 'source \$CW_CONFIG|source "\$CW_CONFIG"|\. \$CW_CON
   cw_die "Local config must be parsed as data, not sourced."
 fi
 
+cw_log "Checking interactive prompt safety"
+if grep -Eq 'done[[:space:]]*<[[:space:]]*<\(cw_profile_modules' "$CW_ROOT/scripts/bootstrap.sh"; then
+  cw_die "bootstrap.sh must not run modules inside a cw_profile_modules stdin redirection."
+fi
+grep -q '</dev/tty' "$CW_ROOT/scripts/lib/common.sh" || cw_die "cw_confirm must read interactive replies from /dev/tty."
+if command -v setsid >/dev/null 2>&1; then
+  if ! printf 'module-from-stdin\n' | setsid bash -c "source scripts/lib/common.sh; if cw_confirm 'Regression prompt'; then exit 1; fi; IFS= read -r leftover; [[ \"\$leftover\" == 'module-from-stdin' ]]" >/tmp/caracoders-confirm-stdin.out 2>/tmp/caracoders-confirm-stdin.err; then
+    cat /tmp/caracoders-confirm-stdin.out /tmp/caracoders-confirm-stdin.err >&2 || true
+    cw_die "cw_confirm must not consume inherited stdin when no tty is available."
+  fi
+else
+  cw_warn "setsid not available; skipping noninteractive stdin regression test."
+fi
+
 cw_log "Checking safe config parser allowlist"
 for blocked_key in PATH IFS BASH_ENV SHELLOPTS CW_ROOT CW_DRY_RUN PROFILE_MODULES; do
   tmp="$(mktemp)"

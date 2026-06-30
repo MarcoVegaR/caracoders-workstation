@@ -314,7 +314,14 @@ cw_confirm() {
     return 0
   fi
   local reply
-  read -r -p "$prompt [y/N]: " reply
+  if ! printf '%s [y/N]: ' "$prompt" 2>/dev/null >/dev/tty; then
+    cw_warn "No interactive terminal available; skipping confirmation: $prompt"
+    return 1
+  fi
+  if ! IFS= read -r reply 2>/dev/null </dev/tty; then
+    cw_warn "No confirmation received from interactive terminal; skipping: $prompt"
+    return 1
+  fi
   [[ "$reply" =~ ^[Yy]$ ]]
 }
 
