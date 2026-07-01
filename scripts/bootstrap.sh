@@ -80,4 +80,10 @@ for module in "${modules[@]}"; do
 done
 run_script doctor.sh --profile "$CW_PROFILE"
 run_script verify.sh --profile "$CW_PROFILE"
-cw_log "Bootstrap finished. Review warnings above; non-strict optional components may have been skipped. Docker group changes may require logout/login."
+cw_log "Bootstrap finished. Review warnings above; non-strict optional components may have been skipped."
+cw_log "Post-install activation:"
+cw_log "  1. Open a new terminal, or run: source \"\$HOME/.config/caracoders-workstation/bash/caracoders-workstation.sh\""
+cw_log "  2. If Docker group membership changed or Docker is not accessible, run: newgrp docker; otherwise logout/login or reboot. If it still fails, start Docker with: sudo systemctl enable --now docker"
+cw_log "  3. Validate host state: ./doctor.sh --profile $CW_PROFILE --strict"
+cw_log "  4. Validate repository policy: ./verify.sh --profile $CW_PROFILE"
+cw_log "doctor.sh validates this host; verify.sh validates this repository checkout."

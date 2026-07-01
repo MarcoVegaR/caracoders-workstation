@@ -35,11 +35,25 @@ git clone <repo-url> caracoders-workstation
 cd caracoders-workstation
 ./bootstrap.sh --profile full --dry-run
 ./bootstrap.sh --profile full
+source "$HOME/.config/caracoders-workstation/bash/caracoders-workstation.sh"
+# If Docker group membership changed: newgrp docker, or logout/login/reboot.
 ./doctor.sh --profile full --strict
 ./verify.sh --profile full
 ```
 
 Use `full` for the standard Caracoders developer/support workstation. Use a smaller profile only when the machine has a narrower purpose and the operator understands the profile composition in `docs/profiles.md`.
+
+### Post-install activation
+
+After `./bootstrap.sh --profile full` finishes, activate the shell integration before judging same-terminal commands such as `node`, `npm`, `pnpm`, `opencode` or `laravel`:
+
+```bash
+source "$HOME/.config/caracoders-workstation/bash/caracoders-workstation.sh"
+```
+
+Opening a new terminal also loads the integration when the `.bashrc` block was approved. If Docker group membership changed or Docker is not accessible without `sudo`, run `newgrp docker`; otherwise log out and back in or reboot. If Docker still is not reachable, start the daemon with `sudo systemctl enable --now docker`.
+
+Then validate in this order: `./doctor.sh --profile full --strict` validates the host workstation state, and `./verify.sh --profile full` validates this repository checkout, policies, pins and templates.
 
 Read next:
 

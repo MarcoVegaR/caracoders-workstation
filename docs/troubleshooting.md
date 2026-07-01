@@ -2,11 +2,19 @@
 
 ## Docker permission denied
 
-Logout/login after Docker group changes. The Docker group is intentionally gated because membership effectively grants high local privileges.
+After Docker group changes, run `newgrp docker`; otherwise log out and back in or reboot. If the session already has the `docker` group but Docker is still unreachable, start the daemon with `sudo systemctl enable --now docker` and retry `docker info`.
+
+The Docker group is intentionally gated because membership effectively grants high local privileges.
 
 ## NVM/npm not found in a script
 
-Run:
+After bootstrap, same-terminal commands may not see the shell integration yet. Open a new terminal or run:
+
+```bash
+source "$HOME/.config/caracoders-workstation/bash/caracoders-workstation.sh"
+```
+
+If Node is still unavailable, run:
 
 ```bash
 ./scripts/install-node-nvm.sh --profile dev
@@ -31,7 +39,7 @@ Do not use unescaped backslashes inside double-quoted TOML strings. Prefer TOML 
 
 ## Strict doctor fails
 
-`doctor.sh --strict` fails if a command required by the selected profile is missing. Re-run the relevant profile installer, then re-run doctor. For example:
+`doctor.sh --strict` fails if a command required by the selected profile is missing or if a warning remains. Activate shell integration, refresh Docker group membership if needed, re-run the relevant profile installer only if something is still missing, then re-run doctor. For example:
 
 ```bash
 ./bootstrap.sh --profile laravel --yes

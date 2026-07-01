@@ -58,11 +58,15 @@ if cw_command_exists docker; then
   if docker info >/dev/null 2>&1; then
     cw_log "Docker daemon reachable"
   else
-    user_groups="$(id -nG "$USER" 2>/dev/null || true)"
-    if [[ " $user_groups " == *" docker "* ]]; then
-      cw_warn "Docker installed but daemon not reachable for current user. If group membership was just changed, logout/login, reboot, or run 'newgrp docker'; otherwise start Docker with: sudo systemctl enable --now docker"
+    current_user="$(id -un 2>/dev/null || printf '%s' "${USER:-unknown}")"
+    current_groups="$(id -nG 2>/dev/null || true)"
+    account_groups="$(id -nG "$current_user" 2>/dev/null || true)"
+    if [[ " $account_groups " == *" docker "* && " $current_groups " != *" docker "* ]]; then
+      cw_warn "Docker installed, and $current_user is in the docker group, but this session does not see that group yet. Run: newgrp docker; otherwise logout/login or reboot. Then re-run: ./doctor.sh --profile $CW_PROFILE --strict"
+    elif [[ " $current_groups " == *" docker "* ]]; then
+      cw_warn "Docker installed and this session has the docker group, but the daemon/socket is not reachable. Start Docker with: sudo systemctl enable --now docker; then run: docker info"
     else
-      cw_warn "Docker installed but daemon not reachable for current user. Run: sudo usermod -aG docker $USER, then logout/login, reboot, or run 'newgrp docker'. Also ensure Docker is running: sudo systemctl enable --now docker"
+      cw_warn "Docker installed, but $current_user is not in the docker group. Run: sudo usermod -aG docker $current_user; then run: newgrp docker; otherwise logout/login or reboot. Also ensure Docker is running: sudo systemctl enable --now docker"
     fi
     warn_count=$((warn_count + 1))
   fi

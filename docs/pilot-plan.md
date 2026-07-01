@@ -30,22 +30,31 @@ cd caracoders-workstation
 ./bootstrap.sh --profile full
 ```
 
-5. Log out and back in if Docker group membership changed.
-6. Run validations:
+5. Activate post-install shell integration before checking same-terminal commands:
+
+```bash
+source "$HOME/.config/caracoders-workstation/bash/caracoders-workstation.sh"
+```
+
+Opening a new terminal also loads the integration when the `.bashrc` block was approved.
+6. If Docker group membership changed or Docker is not accessible without `sudo`, run `newgrp docker`; otherwise log out and back in or reboot. If Docker still is not reachable, start it with `sudo systemctl enable --now docker`.
+7. Run validations:
 
 ```bash
 ./doctor.sh --profile full --strict
 ./verify.sh --profile full
 ```
 
-7. Create a Laravel project from the template and confirm Docker Compose, VS Code Dev Containers and OpenCode can be used from the project root.
-8. Record failures, manual workarounds, package conflicts, network/proxy issues and elapsed install time.
+`doctor.sh` validates the host. `verify.sh` validates the repository checkout, policies, pins and templates.
+
+8. Create a Laravel project from the template and confirm Docker Compose, VS Code Dev Containers and OpenCode can be used from the project root.
+9. Record failures, manual workarounds, package conflicts, network/proxy issues and elapsed install time.
 
 ## Pass Criteria
 
 - Dry-run is understandable and does not imply actions that the real install will skip.
 - Bootstrap completes without unreviewed manual changes.
-- Doctor passes in strict mode after required logout/login.
+- Doctor passes in strict mode after required shell activation and Docker group refresh.
 - Verify passes from the repo root.
 - Laravel template starts successfully and binds exposed services to localhost by default.
 - VS Code and OpenCode are usable for a normal project workflow.

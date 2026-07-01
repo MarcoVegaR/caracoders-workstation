@@ -47,13 +47,22 @@ cp .caracoders-workstation.env.example .caracoders-workstation.env
 ./bootstrap.sh --profile full
 ```
 
-7. If Docker was installed or the user was added to the Docker group, log out and back in before Docker checks.
-8. Validate the workstation:
+7. Activate post-install shell integration before checking same-terminal commands:
+
+```bash
+source "$HOME/.config/caracoders-workstation/bash/caracoders-workstation.sh"
+```
+
+Opening a new terminal also loads the integration when the `.bashrc` block was approved.
+8. If Docker was installed, the user was added to the Docker group or Docker is not accessible without `sudo`, run `newgrp docker`; otherwise log out and back in or reboot. If Docker still is not reachable, start it with `sudo systemctl enable --now docker`.
+9. Validate the workstation:
 
 ```bash
 ./doctor.sh --profile full --strict
 ./verify.sh --profile full
 ```
+
+`doctor.sh` validates host state. `verify.sh` validates the repository checkout, policies, pins and templates.
 
 ## First Laravel Project
 

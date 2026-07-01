@@ -20,8 +20,16 @@ cd caracoders-workstation
 ./bootstrap.sh --profile full
 ```
 
-5. If Docker was installed or group membership changed, log out and back in before validating Docker-dependent checks.
-6. Run validation:
+5. Activate post-install shell integration before judging same-terminal commands such as `node`, `npm`, `pnpm`, `opencode` or `laravel`:
+
+```bash
+source "$HOME/.config/caracoders-workstation/bash/caracoders-workstation.sh"
+```
+
+Opening a new terminal also loads the integration when the `.bashrc` block was approved.
+
+6. If Docker was installed, group membership changed or Docker is not accessible without `sudo`, run `newgrp docker`; otherwise log out and back in or reboot. If Docker still is not reachable, start it with `sudo systemctl enable --now docker`.
+7. Run validation:
 
 ```bash
 ./doctor.sh --profile full --strict
