@@ -46,10 +46,15 @@ while IFS= read -r module; do
 done < <(cw_profile_modules "$CW_PROFILE")
 
 if cw_command_exists docker; then
-  if docker version >/dev/null 2>&1; then
+  if docker info >/dev/null 2>&1; then
     cw_log "Docker daemon reachable"
   else
-    cw_warn "Docker installed but daemon not reachable for current user."
+    user_groups="$(id -nG "$USER" 2>/dev/null || true)"
+    if [[ " $user_groups " == *" docker "* ]]; then
+      cw_warn "Docker installed but daemon not reachable for current user. If group membership was just changed, logout/login, reboot, or run 'newgrp docker'; otherwise start Docker with: sudo systemctl enable --now docker"
+    else
+      cw_warn "Docker installed but daemon not reachable for current user. Run: sudo usermod -aG docker $USER, then logout/login, reboot, or run 'newgrp docker'. Also ensure Docker is running: sudo systemctl enable --now docker"
+    fi
     warn_count=$((warn_count + 1))
   fi
 fi

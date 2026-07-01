@@ -45,12 +45,43 @@ fi
 if cw_command_exists docker; then
   cw_run docker --version
   cw_run docker compose version
-  smoke_image="${DOCKER_HELLO_WORLD_IMAGE:-hello-world@sha256:d2c94e258dcb3c5ac2798d32e1249e42ef01c38b196fe8fb44a7eaceabaabcf8}"
-  [[ "$smoke_image" != *':latest'* ]] || cw_die "Docker smoke image must not use :latest: $smoke_image"
-  [[ "$smoke_image" == *@sha256:* ]] || cw_die "Docker smoke image must be digest-pinned: $smoke_image"
-  cw_run sudo docker run --rm "$smoke_image"
+
+  if [[ "$CW_DRY_RUN" == "true" ]]; then
+    cw_run sudo docker info
+  elif sudo docker info >/dev/null; then
+    cw_log "Docker daemon reachable via sudo."
+  else
+    cw_die "Docker installed but daemon not reachable via sudo. Start Docker with: sudo systemctl enable --now docker"
+  fi
+
   if cw_confirm_sensitive CARACODERS_CONFIRM_DOCKER_GROUP "Add current user to docker group? This gives high local privileges."; then
     cw_run sudo usermod -aG docker "$USER"
-    cw_warn "Logout/login is required for docker group membership to apply."
+    if [[ "$CW_DRY_RUN" == "true" ]]; then
+      cw_log "DRY-RUN: docker group membership would require logout/login, reboot, or 'newgrp docker' to apply."
+    else
+      cw_warn "User '$USER' added to docker group. Logout/login, reboot, or run 'newgrp docker' for membership to apply."
+    fi
+  fi
+
+  smoke_image="${DOCKER_HELLO_WORLD_IMAGE:-hello-world@sha256:96498ffd522e70807ab6384a5c0485a79b9c7c08ca79ba08623edcad1054e62d}"
+  [[ "$smoke_image" != *':latest'* ]] || cw_die "Docker smoke image must not use :latest: $smoke_image"
+  [[ "$smoke_image" == *@sha256:* ]] || cw_die "Docker smoke image must be digest-pinned: $smoke_image"
+
+  if [[ "$CW_DRY_RUN" == "true" ]]; then
+    cw_run sudo docker run --rm "$smoke_image"
+  else
+    display="$(cw_quote_cmd sudo docker run --rm "$smoke_image")"
+    cw_log "RUN: $display"
+    cw_record_action "RUN $display"
+    if sudo docker run --rm "$smoke_image"; then
+      cw_log "Docker smoke test passed: $smoke_image"
+    else
+      status=$?
+      message="Docker smoke test failed for $smoke_image (exit=$status). This can be caused by registry/network/digest availability; Docker installation already completed."
+      if [[ "$CW_STRICT" == "true" ]]; then
+        cw_die "$message"
+      fi
+      cw_warn "$message Continuing because Docker smoke image validation is non-fatal by default. Re-run with --strict to make it fatal."
+    fi
   fi
 fi

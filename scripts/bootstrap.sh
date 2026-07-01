@@ -22,6 +22,13 @@ cw_parse_args "$@"
 cw_load_config
 cw_check_profile
 
+cw_bootstrap_error() {
+  local status=$?
+  cw_err "Bootstrap failed. profile=$CW_PROFILE exit=$status. Review the last module output, fix the issue, then re-run ./bootstrap.sh --profile $CW_PROFILE."
+  exit "$status"
+}
+trap cw_bootstrap_error ERR
+
 run_script() {
   local script="$1"
   shift || true

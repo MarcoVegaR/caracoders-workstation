@@ -227,7 +227,43 @@ DOCKER_HELLO_WORLD_IMAGE_CHECK="${DOCKER_HELLO_WORLD_IMAGE:-}"
 [[ -n "$DOCKER_HELLO_WORLD_IMAGE_CHECK" ]] || cw_die "DOCKER_HELLO_WORLD_IMAGE must be set in config/versions.env"
 [[ "$DOCKER_HELLO_WORLD_IMAGE_CHECK" != *':latest'* ]] || cw_die "DOCKER_HELLO_WORLD_IMAGE must not use :latest"
 [[ "$DOCKER_HELLO_WORLD_IMAGE_CHECK" == *@sha256:* ]] || cw_die "DOCKER_HELLO_WORLD_IMAGE must be digest-pinned"
-grep -q 'docker run --rm "$smoke_image"' "$CW_ROOT/scripts/install-docker.sh" || cw_die "install-docker.sh must use the digest-pinned DOCKER_HELLO_WORLD_IMAGE smoke image."
+[[ "$DOCKER_HELLO_WORLD_IMAGE_CHECK" =~ @sha256:[0-9a-f]{64}$ ]] || cw_die "DOCKER_HELLO_WORLD_IMAGE must end with a full sha256 digest"
+python3 - <<'PYDOCKERSTATIC'
+import pathlib
+import sys
+
+text = pathlib.Path('scripts/install-docker.sh').read_text(encoding='utf-8')
+lines = text.splitlines()
+
+def first_contains(needle):
+    for i, line in enumerate(lines, start=1):
+        if needle in line and not line.strip().startswith('#'):
+            return i
+    raise SystemExit(f'missing expected Docker installer marker: {needle}')
+
+version = first_contains('docker --version')
+compose = first_contains('docker compose version')
+daemon = first_contains('sudo docker info')
+group = first_contains('CARACODERS_CONFIRM_DOCKER_GROUP')
+smoke = first_contains('sudo docker run --rm "$smoke_image"')
+if not (version < compose < daemon < group < smoke):
+    raise SystemExit(f'Docker install flow order is unsafe: version={version}, compose={compose}, daemon={daemon}, group={group}, smoke={smoke}')
+for i, line in enumerate(lines):
+    if 'cw_run sudo docker run --rm "$smoke_image"' not in line:
+        continue
+    context = '\n'.join(lines[max(0, i - 2):i + 1])
+    if 'CW_DRY_RUN' not in context:
+        raise SystemExit('Docker smoke test must not use cw_run directly outside dry-run; failures are non-fatal by default.')
+required_markers = [
+    'if sudo docker run --rm "$smoke_image"; then',
+    'Docker smoke test failed',
+    'CW_STRICT',
+    'Re-run with --strict to make it fatal',
+]
+for marker in required_markers:
+    if marker not in text:
+        raise SystemExit(f'Docker installer missing smoke-test policy marker: {marker}')
+PYDOCKERSTATIC
 
 [[ -n "${DOCKER_APT_KEY_FINGERPRINT:-}" ]] || cw_die "DOCKER_APT_KEY_FINGERPRINT must be set in config/versions.env"
 [[ "${DOCKER_APT_KEY_FINGERPRINT}" =~ ^[0-9A-Fa-f]{40}$ ]] || cw_die "DOCKER_APT_KEY_FINGERPRINT must be a full 40-hex fingerprint."
