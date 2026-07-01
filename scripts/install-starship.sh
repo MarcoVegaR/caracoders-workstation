@@ -5,6 +5,38 @@ cw_parse_args "$@"
 cw_load_config
 cw_check_profile
 
+install_nerd_font() {
+  local font_name font_version font_dir tmpdir font_zip checksums font_url checksums_url expected_sha
+  font_name="${NERD_FONT_NAME:-FiraCode}"
+  font_version="${NERD_FONT_VERSION:-v3.4.0}"
+  font_dir="$HOME/.local/share/fonts/${font_name}NerdFont"
+  tmpdir="/tmp/caracoders-nerd-font-${CW_STARTED_AT}"
+  font_zip="$tmpdir/${font_name}.zip"
+  checksums="$tmpdir/SHA-256.txt"
+  font_url="https://github.com/ryanoasis/nerd-fonts/releases/download/${font_version}/${font_name}.zip"
+  checksums_url="${NERD_FONT_CHECKSUMS_URL:-https://github.com/ryanoasis/nerd-fonts/releases/download/${font_version}/SHA-256.txt}"
+  expected_sha="${NERD_FONT_SHA256:-}"
+
+  cw_run mkdir -p "$tmpdir" || return
+  cw_download_file "$font_url" "$font_zip" || return
+  if [[ -n "$expected_sha" ]]; then
+    cw_log "Using pinned Nerd Font SHA256 from config for ${font_name}.zip"
+    cw_verify_sha256 "$font_zip" "$expected_sha" || return
+  else
+    cw_download_file "$checksums_url" "$checksums" || return
+    cw_verify_sha256_from_manifest "$font_zip" "$checksums" "${font_name}.zip" || return
+  fi
+  cw_run mkdir -p "$font_dir" || return
+  cw_run unzip -o "$font_zip" -d "$font_dir" || return
+  cw_run rm -rf "$tmpdir" || return
+  cw_run fc-cache -f "$font_dir" || return
+  if [[ "$CW_DRY_RUN" == "true" ]]; then
+    cw_log "DRY-RUN: Nerd Font install would complete for ${font_name} -> $font_dir"
+  else
+    cw_log "Nerd Font installed: ${font_name} -> $font_dir"
+  fi
+}
+
 if ! cw_command_exists starship; then
   if cw_confirm_sensitive CARACODERS_CONFIRM_STARSHIP_INSTALL "Install pinned Starship release binary?"; then
     version="${STARSHIP_VERSION:-v1.24.2}"
@@ -38,20 +70,14 @@ cw_copy_with_backup "$CW_ROOT/config/starship/starship.toml" "$HOME/.config/star
 
 if [[ "${INSTALL_STARSHIP_FONT:-true}" == "true" ]]; then
   if cw_confirm_sensitive CARACODERS_CONFIRM_STARSHIP_FONT "Install FiraCode Nerd Font into ~/.local/share/fonts?"; then
-    font_name="${NERD_FONT_NAME:-FiraCode}"
-    font_version="${NERD_FONT_VERSION:-v3.4.0}"
-    font_dir="$HOME/.local/share/fonts/${font_name}NerdFont"
-    tmpdir="/tmp/caracoders-nerd-font-${CW_STARTED_AT}"
-    font_zip="$tmpdir/${font_name}.zip"
-    checksums="$tmpdir/SHA-256.txt"
-    font_url="https://github.com/ryanoasis/nerd-fonts/releases/download/${font_version}/${font_name}.zip"
-    checksums_url="${NERD_FONT_CHECKSUMS_URL:-https://github.com/ryanoasis/nerd-fonts/releases/download/${font_version}/SHA-256.txt}"
-    cw_run mkdir -p "$tmpdir" "$font_dir"
-    cw_download_file "$font_url" "$font_zip"
-    cw_download_file "$checksums_url" "$checksums"
-    cw_verify_sha256_from_manifest "$font_zip" "$checksums" "${font_name}.zip"
-    cw_run unzip -o "$font_zip" -d "$font_dir"
-    cw_run rm -rf "$tmpdir"
-    cw_run fc-cache -f "$font_dir"
+    font_status=0
+    install_nerd_font || font_status=$?
+    if [[ "$font_status" -ne 0 ]]; then
+      message="FiraCode Nerd Font installation did not complete (exit=$font_status). Download, checksum, unzip or font-cache may have failed; checksum verification was not bypassed."
+      if [[ "$CW_STRICT" == "true" ]]; then
+        cw_die "$message"
+      fi
+      cw_warn "$message Continuing because Nerd Font is optional by default. Re-run with --strict to make this fatal."
+    fi
   fi
 fi

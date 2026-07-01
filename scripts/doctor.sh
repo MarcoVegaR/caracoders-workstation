@@ -20,6 +20,14 @@ check_cmd() {
   fi
 }
 
+profile_includes_module() {
+  local wanted="$1" module
+  while IFS= read -r module; do
+    [[ "$module" == "$wanted" ]] && return 0
+  done < <(cw_profile_modules "$CW_PROFILE")
+  return 1
+}
+
 required_commands_for_module() {
   case "$1" in
   minimal) printf '%s\n' git curl jq tree htop ;;
@@ -30,7 +38,8 @@ required_commands_for_module() {
   ai) printf '%s\n' git python3 node npm npx opencode ;;
   support) printf '%s\n' dig whois traceroute ip iperf3 http jq remmina flameshot smartctl gnome-disks ncdu lsof rsync filezilla ;;
   security) printf '%s\n' gitleaks trivy hadolint shellcheck shfmt pre-commit ;;
-  devcontainer | starship | dotfiles) : ;;
+  starship) printf '%s\n' starship ;;
+  devcontainer | dotfiles) : ;;
   esac
 }
 
@@ -56,6 +65,19 @@ if cw_command_exists docker; then
       cw_warn "Docker installed but daemon not reachable for current user. Run: sudo usermod -aG docker $USER, then logout/login, reboot, or run 'newgrp docker'. Also ensure Docker is running: sudo systemctl enable --now docker"
     fi
     warn_count=$((warn_count + 1))
+  fi
+fi
+
+if profile_includes_module starship && [[ "${INSTALL_STARSHIP_FONT:-true}" == "true" ]]; then
+  font_name="${NERD_FONT_NAME:-FiraCode}"
+  font_dir="$HOME/.local/share/fonts/${font_name}NerdFont"
+  if [[ -d "$font_dir" ]] && compgen -G "$font_dir/*" >/dev/null; then
+    printf 'OK   optional Nerd Font -> %s\n' "$font_dir"
+  elif [[ "$CW_STRICT" == "true" ]]; then
+    cw_warn "Optional ${font_name} Nerd Font not detected at $font_dir. Re-run scripts/install-starship.sh or set INSTALL_STARSHIP_FONT=false if this machine should not install it."
+    warn_count=$((warn_count + 1))
+  else
+    printf 'INFO optional Nerd Font not detected at %s; bootstrap continues without this optional font unless --strict is used.\n' "$font_dir"
   fi
 fi
 

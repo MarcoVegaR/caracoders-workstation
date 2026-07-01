@@ -402,19 +402,30 @@ cw_install_binary_file() {
 
 cw_download_file() {
   local url="$1" dst="$2"
-  cw_run curl -fsSL "$url" -o "$dst"
+  cw_run curl -fsSL --retry 5 --retry-delay 2 --retry-max-time 300 --retry-connrefused --retry-all-errors --connect-timeout 20 "$url" -o "$dst"
 }
 
 cw_verify_sha256() {
   local file="$1" expected="$2"
-  [[ -n "$expected" ]] || cw_die "Missing expected SHA256 for $file"
+  [[ -n "$expected" ]] || {
+    cw_err "Missing expected SHA256 for $file"
+    return 1
+  }
   if [[ "$CW_DRY_RUN" == "true" ]]; then
     cw_log "DRY-RUN: verify sha256 for $file"
     return 0
   fi
   local actual
+  [[ -f "$file" ]] || {
+    cw_err "File not found for SHA256 verification: $file"
+    return 1
+  }
   actual="$(sha256sum "$file" | awk '{print $1}')"
-  [[ "$actual" == "$expected" ]] || cw_die "SHA256 mismatch for $file. expected=$expected actual=$actual"
+  if [[ "$actual" != "$expected" ]]; then
+    cw_err "SHA256 mismatch for $file. expected=$expected actual=$actual"
+    return 1
+  fi
+  cw_log "SHA256 verified: $file"
 }
 
 cw_arch_token() {
@@ -427,9 +438,15 @@ cw_arch_token() {
 
 cw_sha256_from_manifest() {
   local manifest="$1" asset="$2" checksum
-  [[ -f "$manifest" ]] || cw_die "Checksum manifest not found: $manifest"
+  [[ -f "$manifest" ]] || {
+    cw_err "Checksum manifest not found: $manifest"
+    return 1
+  }
   checksum="$(awk -v asset="$asset" '$2 == asset || $2 == "./" asset || $NF == asset || $NF == "./" asset {print $1; exit}' "$manifest")"
-  [[ -n "$checksum" ]] || cw_die "Asset $asset not found in checksum manifest $manifest"
+  [[ -n "$checksum" ]] || {
+    cw_err "Asset $asset not found in checksum manifest $manifest"
+    return 1
+  }
   printf '%s' "$checksum"
 }
 
@@ -439,7 +456,7 @@ cw_verify_sha256_from_manifest() {
     cw_log "DRY-RUN: verify sha256 for $file using manifest $manifest asset $asset"
     return 0
   fi
-  expected="$(cw_sha256_from_manifest "$manifest" "$asset")"
+  expected="$(cw_sha256_from_manifest "$manifest" "$asset")" || return
   cw_verify_sha256 "$file" "$expected"
 }
 

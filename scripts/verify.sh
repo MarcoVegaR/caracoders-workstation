@@ -278,6 +278,9 @@ for pkg in opencode-ai @modelcontextprotocol/server-filesystem @playwright/mcp @
 done
 
 cw_log "Checking security/starship/PECL pinning"
+grep -q -- '--retry' "$CW_ROOT/scripts/lib/common.sh" || cw_die "cw_download_file must use curl retry flags for transient network failures."
+grep -q -- '--retry-all-errors' "$CW_ROOT/scripts/lib/common.sh" || cw_die "cw_download_file must retry transient curl failures beyond default HTTP cases."
+grep -q 'SHA256 verified:' "$CW_ROOT/scripts/lib/common.sh" || cw_die "SHA256 verification must log successful checks for auditability."
 grep -q 'install_gitleaks' "$CW_ROOT/scripts/install-security-tools.sh" || cw_die "security profile must install gitleaks locally, not only warn."
 grep -q 'install_trivy' "$CW_ROOT/scripts/install-security-tools.sh" || cw_die "security profile must install trivy locally, not only warn."
 grep -q 'install_hadolint' "$CW_ROOT/scripts/install-security-tools.sh" || cw_die "security profile must install hadolint locally, not only warn."
@@ -290,8 +293,31 @@ if grep -q 'starship.rs/install.sh' "$CW_ROOT/scripts/install-starship.sh"; then
   cw_die "Starship installer must not use the floating official install script in v1.6."
 fi
 grep -q 'STARSHIP_X86_64_GNU_SHA256' "$CW_ROOT/scripts/install-starship.sh" || cw_die "Starship install must verify an approved checksum."
+grep -q 'NERD_FONT_SHA256=' "$CW_ROOT/config/versions.env" || cw_die "Nerd Font should use a fixed approved SHA256 when available to reduce manifest download fragility."
 grep -q 'NERD_FONT_CHECKSUMS_URL' "$CW_ROOT/config/versions.env" || cw_die "Nerd Font checksum manifest URL must be controlled by config/versions.env."
+grep -q 'cw_verify_sha256 "$font_zip" "$expected_sha"' "$CW_ROOT/scripts/install-starship.sh" || cw_die "Nerd Font archive must support fixed SHA256 verification before unzip/install."
 grep -q 'cw_verify_sha256_from_manifest "$font_zip" "$checksums" "${font_name}.zip"' "$CW_ROOT/scripts/install-starship.sh" || cw_die "Nerd Font archive must be SHA256-verified before unzip/install."
+grep -Fq '[[ "$CW_STRICT" == "true" ]] && args+=(--strict)' "$CW_ROOT/scripts/bootstrap.sh" || cw_die "bootstrap.sh must propagate --strict to child scripts."
+grep -q 'optional Nerd Font not detected' "$CW_ROOT/scripts/doctor.sh" || cw_die "doctor.sh must report optional Nerd Font status without treating it as a normal command."
+python3 - <<'PYSTARSHIPSTATIC'
+import pathlib
+text = pathlib.Path('scripts/install-starship.sh').read_text(encoding='utf-8')
+required_markers = [
+    'install_nerd_font || font_status=$?',
+    'checksum verification was not bypassed',
+    'if [[ "$CW_STRICT" == "true" ]]; then',
+    'cw_die "$message"',
+    'Continuing because Nerd Font is optional by default',
+]
+for marker in required_markers:
+    if marker not in text:
+        raise SystemExit(f'install-starship.sh missing Nerd Font resilience marker: {marker}')
+strict = text.find('if [[ "$CW_STRICT" == "true" ]]; then')
+fatal = text.find('cw_die "$message"', strict)
+warning = text.find('Continuing because Nerd Font is optional by default')
+if not (strict != -1 and strict < fatal < warning):
+    raise SystemExit('Nerd Font failure policy must be strict fatal before non-strict warning continuation.')
+PYSTARSHIPSTATIC
 grep -q 'pecl install redis-${PECL_REDIS_VERSION}' "$CW_ROOT/templates/laravel/Dockerfile" || cw_die "Dockerfile must pin PECL redis through PECL_REDIS_VERSION."
 
 cw_log "Checking AI npm bootstrap integration"

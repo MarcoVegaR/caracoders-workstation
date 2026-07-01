@@ -24,7 +24,7 @@ cw_check_profile
 
 cw_bootstrap_error() {
   local status=$?
-  cw_err "Bootstrap failed. profile=$CW_PROFILE exit=$status. Review the last module output, fix the issue, then re-run ./bootstrap.sh --profile $CW_PROFILE."
+  cw_err "Bootstrap failed. profile=$CW_PROFILE strict=$CW_STRICT exit=$status. Review the last module output, fix the issue, then re-run ./bootstrap.sh --profile $CW_PROFILE. Optional components are non-fatal unless --strict is enabled."
   exit "$status"
 }
 trap cw_bootstrap_error ERR
@@ -35,6 +35,7 @@ run_script() {
   local args=("$@")
   [[ "$CW_DRY_RUN" == "true" ]] && args+=(--dry-run)
   [[ "$CW_YES" == "true" ]] && args+=(--yes)
+  [[ "$CW_STRICT" == "true" ]] && args+=(--strict)
   [[ -n "$CW_CONFIG" ]] && args+=(--config "$CW_CONFIG")
   cw_log "==> $script $(cw_quote_cmd "${args[@]}")"
   "$CW_ROOT/scripts/$script" "${args[@]}"
@@ -70,7 +71,7 @@ run_module() {
   esac
 }
 
-cw_log "Starting bootstrap. profile=$CW_PROFILE dry-run=$CW_DRY_RUN yes=$CW_YES"
+cw_log "Starting bootstrap. profile=$CW_PROFILE dry-run=$CW_DRY_RUN yes=$CW_YES strict=$CW_STRICT"
 run_script preflight.sh --profile "$CW_PROFILE"
 run_script install-apt.sh --profile "$CW_PROFILE"
 mapfile -t modules < <(cw_profile_modules "$CW_PROFILE")
@@ -79,4 +80,4 @@ for module in "${modules[@]}"; do
 done
 run_script doctor.sh --profile "$CW_PROFILE"
 run_script verify.sh --profile "$CW_PROFILE"
-cw_log "Bootstrap finished. Review warnings above. Docker group changes may require logout/login."
+cw_log "Bootstrap finished. Review warnings above; non-strict optional components may have been skipped. Docker group changes may require logout/login."
